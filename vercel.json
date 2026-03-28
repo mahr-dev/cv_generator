@@ -3,7 +3,7 @@
   "buildCommand": "cd service/frontend && npm install && npm run build && cd ../.. && node scripts/vercel-copy-public.mjs",
   "rewrites": [
     {
-      "source": "^/(?!api/)(.*)$",
+      "source": "/:path((?!api/).*)",
       "destination": "/index.html"
     }
   ]
