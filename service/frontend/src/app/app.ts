@@ -5,6 +5,8 @@ import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subject, Subscription, debounceTime, finalize } from 'rxjs';
 
+import { environment } from '../environments/environment';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Temas: colores de encabezado sincronizados con backend/cv_design_theme.py
 // ─────────────────────────────────────────────────────────────────────────────
@@ -55,7 +57,7 @@ const COMPLETION_CHECKS: CompletionCheck[] = [
   templateUrl: './app.html'
 })
 export class App implements OnInit, OnDestroy {
-  private readonly apiBaseUrl = 'http://localhost:8000';
+  private readonly apiBaseUrl = environment.apiUrl.replace(/\/$/, '');
   private readonly STORAGE_KEY = 'cvgen_autosave_v1';
 
   // ── Tema ──────────────────────────────────────────────────────────────────

@@ -129,6 +129,9 @@ docker-compose.override.yml
 tmp/
 temp/
 
+# Front Vercel: generado en build (inject-api-url.cjs)
+service/frontend/src/environments/environment.vercel.generated.ts
+
 # Nota: no ignorar /public/ en la raíz: Vercel empaqueta el deploy respetando
 # .gitignore y el build copia ahí el Angular; si se ignora, solo queda el backend.
 

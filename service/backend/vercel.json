@@ -1,0 +1,5 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "uv pip install --link-mode copy -q -r requirements.txt",
+  "buildCommand": "true"
+}
