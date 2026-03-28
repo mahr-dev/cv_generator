@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://cv-generator-backend.vercel.app/api/:path*"
+      "destination": "https://cv-generator-nine-wheat.vercel.app/api/:path*"
     },
     {
       "source": "/(.*)",
