@@ -1,0 +1,318 @@
+<!-- ══ BARRA SUPERIOR FIJA ════════════════════════════════════════════ -->
+<header class="site-header">
+    <div class="site-header-inner">
+      <span class="site-header-title">Generador de CV</span>
+      <span class="site-header-sub">Crea tu CV profesional en PDF</span>
+      <span class="saved-badge header-saved" *ngIf="lastSaved">✓ {{ lastSavedText }}</span>
+      <div class="header-actions">
+        <button
+            type="button"
+            class="btn-theme-toggle"
+            (click)="toggleTheme()"
+            [title]="isDarkTheme ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'"
+        >{{ isDarkTheme ? '☀' : '☾' }}</button>
+        <button
+            type="button"
+            class="btn-header-generate"
+            (click)="onGenerate()"
+            [disabled]="loading"
+        >
+            {{ loading ? 'Generando…' : '↓ Generar y descargar' }}
+        </button>
+      </div>
+    </div>
+</header>
+
+<main class="container">
+    <section class="grid">
+
+    <!-- ════════════════════════════════════════════════ FORMULARIO ════ -->
+    <form
+        class="card"
+        [formGroup]="form"
+        (ngSubmit)="onGenerate()"
+        (input)="onFormInput($event)"
+    >
+
+        <!-- ═══ PREFERENCIAS DE DISEÑO (PRIMERO) ═══════════════════════ -->
+        <div class="prefs-section">
+        <button
+            type="button"
+            class="prefs-toggle"
+            (click)="showPreferences = !showPreferences"
+            [attr.aria-expanded]="showPreferences"
+        >
+            <span class="prefs-toggle-icon">{{ showPreferences ? '▴' : '▾' }}</span>
+            Preferencias de diseño
+            <span class="prefs-badge">{{ currentThemeName }}</span>
+        </button>
+
+        <div class="prefs-panel" *ngIf="showPreferences" [formGroup]="prefsForm">
+            <div class="prefs-grid">
+
+            <label class="field">
+                <span>Tipo de letra</span>
+                <select formControlName="font_family">
+                <option *ngFor="let f of fontOptions" [value]="f.key">{{ f.label }}</option>
+                </select>
+            </label>
+
+            <label class="field">
+                <span>Posición de fotografía</span>
+                <select formControlName="foto_position">
+                <option value="top-right">Derecha</option>
+                <option value="top-left">Izquierda</option>
+                <option value="hidden">Ocultar</option>
+                </select>
+            </label>
+
+            <label class="field">
+                <span>Color de acento (texto / líneas)</span>
+                <input
+                type="color"
+                formControlName="accent_color"
+                />
+            </label>
+
+            <label class="field">
+                <span>Color de fondo del encabezado</span>
+                <input
+                type="color"
+                formControlName="header_bg_color"
+                />
+            </label>
+
+            </div>
+            <p class="prefs-hint muted">
+            "Actualizar diseño" rota entre los 5 temas y sincroniza el color del encabezado.
+            Puedes ajustar cada opción manualmente aquí.
+            </p>
+        </div>
+        </div>
+        <!-- ═══════════════════════════════════════════════════════════ -->
+
+        <div class="datos-header">
+          <h2 class="card-title">Datos</h2>
+        </div>
+
+        <label class="field">
+        <span>Nombre</span>
+        <input formControlName="nombre" placeholder="Tu nombre" />
+        </label>
+
+        <label class="field">
+        <span>Profesión</span>
+        <input formControlName="profesion" placeholder="Ej: Desarrollador de Software" />
+        </label>
+
+        <label class="field">
+        <span>Breve descripción (opcional)</span>
+        <textarea formControlName="breve_descripcion" rows="3"
+            placeholder="Si no la agregas, se genera sola."></textarea>
+        </label>
+
+        <label class="field">
+        <span>Fotografía (opcional)</span>
+        <input type="file" accept="image/*" (change)="onPhotoSelected($event)" />
+        <small class="muted" *ngIf="photoName">Seleccionada: {{ photoName }}</small>
+        </label>
+
+        <!-- Experiencia laboral -->
+        <fieldset class="fieldset">
+        <legend>Experiencia laboral</legend>
+        <div formArrayName="experiencia_laboral">
+            <div *ngFor="let group of experiencias.controls; let i = index"
+                class="subcard" [formGroupName]="i">
+            <div class="two-cols">
+                <label class="field">
+                <span>Empresa</span>
+                <input formControlName="empresa" placeholder="Empresa" />
+                </label>
+                <label class="field">
+                <span>Puesto</span>
+                <input formControlName="puesto" placeholder="Puesto" />
+                </label>
+            </div>
+            <div class="two-cols">
+                <label class="field">
+                <span>Año inicio</span>
+                <input formControlName="anio_inicio" placeholder="2022" />
+                </label>
+                <label class="field">
+                <span>Año fin</span>
+                <input formControlName="anio_fin" placeholder="2024" />
+                </label>
+            </div>
+            <label class="field">
+                <span>Descripción (opcional)</span>
+                <textarea formControlName="descripcion" rows="2"
+                placeholder="Logros o responsabilidades"></textarea>
+            </label>
+            <button type="button" class="btn-link"
+                (click)="removeExperience(i)"
+                *ngIf="experiencias.length > 1">Eliminar</button>
+            </div>
+        </div>
+        <button type="button" class="btn" (click)="addExperience()">
+            Añadir experiencia
+        </button>
+        </fieldset>
+
+        <label class="field">
+        <span>Soft skills (separadas por coma)</span>
+        <input formControlName="soft_skills_text"
+            placeholder="Comunicación, Liderazgo, Pensamiento analítico" />
+        </label>
+
+        <!-- Educación -->
+        <fieldset class="fieldset">
+        <legend>Educación</legend>
+        <div formArrayName="educacion">
+            <div *ngFor="let group of educaciones.controls; let i = index"
+                class="subcard" [formGroupName]="i">
+            <div class="two-cols">
+                <label class="field">
+                <span>Título</span>
+                <input formControlName="titulo"
+                    placeholder="Ej: Ingeniería en Informática" />
+                </label>
+                <label class="field">
+                <span>Institución</span>
+                <input formControlName="institucion" placeholder="Universidad" />
+                </label>
+            </div>
+            <div class="two-cols">
+                <label class="field">
+                <span>Año inicio</span>
+                <input formControlName="anio_inicio" placeholder="2020" />
+                </label>
+                <label class="field">
+                <span>Año fin</span>
+                <input formControlName="anio_fin" placeholder="2024" />
+                </label>
+            </div>
+            <button type="button" class="btn-link"
+                (click)="removeEducation(i)"
+                *ngIf="educaciones.length > 1">Eliminar</button>
+            </div>
+        </div>
+        <button type="button" class="btn" (click)="addEducation()">
+            Añadir educación
+        </button>
+        </fieldset>
+
+        <label class="field">
+        <span>Hobbies (opcional, por coma)</span>
+        <input formControlName="hobbies_text" placeholder="Fútbol, Viajar, Lectura" />
+        </label>
+
+        <label class="field">
+        <span>Certificaciones (opcional, por coma)</span>
+        <input formControlName="certificaciones_text"
+            placeholder="AWS Certified, Scrum Master" />
+        </label>
+
+        <!-- Contacto -->
+        <fieldset class="fieldset">
+        <legend>Contacto</legend>
+        <div class="two-cols">
+            <label class="field">
+            <span>Email</span>
+            <input formControlName="email" placeholder="tu@email.com" />
+            </label>
+            <label class="field">
+            <span>Teléfono</span>
+            <input formControlName="telefono" placeholder="+54 11 0000-0000" />
+            </label>
+        </div>
+        <div class="two-cols">
+            <label class="field">
+            <span>LinkedIn (opcional)</span>
+            <input formControlName="linkedin" placeholder="linkedin.com/in/tuusuario" />
+            </label>
+            <label class="field">
+            <span>Website (opcional)</span>
+            <input formControlName="website" placeholder="tusitio.com" />
+            </label>
+        </div>
+        <label class="field">
+            <span>Ciudad (opcional)</span>
+            <input formControlName="ciudad" placeholder="Buenos Aires" />
+        </label>
+        </fieldset>
+
+        <label class="field">
+        <span>Disponibilidad laboral</span>
+        <input formControlName="disponibilidad_laboral"
+            placeholder="Ej: Inmediata / 2 semanas" />
+        </label>
+
+        <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+    </form>
+
+    <!-- ════════════════════════════════════════════════ VISTA PREVIA ══ -->
+    <aside class="card preview">
+
+        <!-- ═══ COMPLETITUD DEL CV ══════════════════════════════════════ -->
+        <div class="completion-section">
+          <div class="completion-row">
+            <span class="completion-label">Completitud del CV &nbsp;</span>
+            <span class="completion-pct" [class.completion-full]="completionScore === 100">
+              {{ completionScore }}%
+            </span>
+            <button type="button" class="btn-clear-all" (click)="clearAll()" *ngIf="hasSavedData">
+              Limpiar CV
+            </button>
+          </div>
+          <div class="completion-track">
+            <div
+              class="completion-fill"
+              [class.completion-fill-full]="completionScore === 100"
+              [style.width.%]="completionScore"
+            ></div>
+          </div>
+          <p class="completion-tip muted" *ngIf="completionScore < 100">
+            Siguiente: {{ completionTip }}
+          </p>
+          <p class="completion-tip muted" *ngIf="completionScore === 100">
+            ¡CV completo! Listo para descargar.
+          </p>
+        </div>
+        <!-- ═══════════════════════════════════════════════════════════ -->
+
+        <div class="preview-header">
+        <h2 class="card-title">Vista previa</h2>
+        <button
+            type="button"
+            class="btn-shuffle"
+            (click)="shuffleDesign()"
+            [title]="'Tema: ' + currentThemeName"
+        >
+            ↻ Actualizar diseño
+        </button>
+        </div>
+
+        <p class="theme-badge muted">Tema activo: <strong>{{ currentThemeName }}</strong></p>
+
+        <div *ngIf="pdfUrl; else hint">
+        <div class="preview-wrapper" (contextmenu)="$event.preventDefault()">
+            <iframe [src]="previewSrcSafe" class="preview-frame"></iframe>
+            <!-- Cubre Descargar + Imprimir + Más (≈132px) sin tapar Rotar -->
+            <div class="pdf-btn-blocker"></div>
+        </div>
+        </div>
+
+        <ng-template #hint>
+        <p class="muted">
+            La vista previa aparecerá aquí. Se actualiza 2 s después de
+            dejar de escribir, o de inmediato al cambiar colores, fuente o foto.
+        </p>
+        </ng-template>
+
+        <p class="preview-loading muted" *ngIf="previewLoading">
+        Actualizando vista previa…
+        </p>
+    </aside>
+
+    </section>
+</main>
