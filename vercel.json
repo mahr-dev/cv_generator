@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd service/frontend && npm install && npm run build && cd ../.. && node scripts/vercel-copy-public.mjs",
+  "rewrites": [
+    {
+      "source": "^/(?!api/)(.*)$",
+      "destination": "/index.html"
+    }
+  ]
+}

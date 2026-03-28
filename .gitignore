@@ -81,6 +81,7 @@ pnpm-debug.log*
 
 # Package lock (opcional)
 package-lock.json
+!service/frontend/package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
@@ -127,6 +128,9 @@ docker-compose.override.yml
 # Archivos temporales
 tmp/
 temp/
+
+# Salida de build para Vercel (Angular copiado a la raíz)
+/public/
 
 # =========================
 # Secrets (MUY IMPORTANTE)
