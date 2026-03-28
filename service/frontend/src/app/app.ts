@@ -5,6 +5,20 @@ import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subject, Subscription, debounceTime, finalize } from 'rxjs';
 
+import { API_BASE_URL } from '../generated-api-base';
+
+function resolveApiBaseUrl(): string {
+  const fromBuild = (API_BASE_URL ?? '').trim().replace(/\/$/, '');
+  if (fromBuild) return fromBuild;
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ) {
+    return 'http://127.0.0.1:8000';
+  }
+  return '';
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Temas: colores de encabezado sincronizados con backend/cv_design_theme.py
 // ─────────────────────────────────────────────────────────────────────────────
@@ -55,12 +69,8 @@ const COMPLETION_CHECKS: CompletionCheck[] = [
   templateUrl: './app.html'
 })
 export class App implements OnInit, OnDestroy {
-  /** En producción (Vercel) la API es el mismo origen; en local, uvicorn suele ir en :8000. */
-  private readonly apiBaseUrl =
-    typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-      ? 'http://127.0.0.1:8000'
-      : '';
+  /** CVGEN_API_BASE en build (front separado), localhost en dev, o '' si API en el mismo origen. */
+  private readonly apiBaseUrl = resolveApiBaseUrl();
   private readonly STORAGE_KEY = 'cvgen_autosave_v1';
 
   // ── Tema ──────────────────────────────────────────────────────────────────
